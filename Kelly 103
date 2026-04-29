@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lap Timer Model</title>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; background: #f0f0f0; }
+        #track { width: 300px; height: 300px; border-radius: 50%; border: 10px solid #555; position: relative; margin: 20px; background: white; }
+        .runner { width: 20px; height: 20px; border-radius: 50%; position: absolute; top: 50%; left: 50%; margin: -10px; }
+        #tracy { background: red; }
+        #kelly { background: blue; }
+        .controls { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+    <h2>Tracy & Kelly Track Model</h2>
+    <div id="track">
+        <div id="tracy" class="runner"></div>
+        <div id="kelly" class="runner"></div>
+    </div>
+    <div class="controls">
+        <p><strong>Timer:</strong> <span id="timer">0.0</span>s</p>
+        <p>🔴 Tracy: 45s/lap (Clockwise)</p>
+        <p>🔵 Kelly: 36s/lap (Counter-Clockwise)</p>
+        <button onclick="reset()">Reset/Start</button>
+        <p id="msg" style="color: green; font-weight: bold;"></p>
+    </div>
+
+    <script>
+        let startTime;
+        let animationId;
+        const tracyEl = document.getElementById('tracy');
+        const kellyEl = document.getElementById('kelly');
+        const timerEl = document.getElementById('timer');
+        const msgEl = document.getElementById('msg');
+
+        function animate(timestamp) {
+            if (!startTime) startTime = timestamp;
+            const elapsed = (timestamp - startTime) / 1000;
+            timerEl.innerText = elapsed.toFixed(1);
+
+            // Calculate positions (in radians)
+            const tracyPos = (elapsed / 45) * 2 * Math.PI;
+            const kellyPos = -(elapsed / 36) * 2 * Math.PI;
+
+            // Set coordinates
+            updatePos(tracyEl, tracyPos);
+            updatePos(kellyEl, kellyPos);
+
+            // Check if they meet (every 20s)
+            if (Math.abs(elapsed % 20) < 0.05 && elapsed > 0.5) {
+                msgEl.innerText = "They met at " + Math.round(elapsed) + "s!";
+            }
+
+            animationId = requestAnimationFrame(animate);
+        }
+
+        function updatePos(el, angle) {
+            const radius = 140;
+            const x = Math.cos(angle - Math.PI/2) * radius;
+            const y = Math.sin(angle - Math.PI/2) * radius;
+            el.style.transform = `translate(${x}px, ${y}px)`;
+        }
+
+        function reset() {
+            cancelAnimationFrame(animationId);
+            startTime = null;
+            msgEl.innerText = "";
+            animationId = requestAnimationFrame(animate);
+        }
+    </script>
+</body>
+</html>
